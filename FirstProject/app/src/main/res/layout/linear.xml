@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:background="#FFBBDD00"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!--리니어 레이아웃은 선형 레이아웃으로서,
+    내부의 지식 컴포넌트들을 일렬로 배치한다.
+    이 때 일렬방향은 두가지가 있다
+    수직 : Vertical
+    수평 : Horizontal
+    -->
+
+    <Button
+        android:id="@+id/button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="난 버튼입니다." />
+
+
+    <ImageView
+        android:layout_width="366dp"
+        android:layout_height="344dp"
+        android:src="@drawable/batman_hero" />
+
+    <EditText
+        android:layout_width="530dp"
+        android:layout_height="64dp"
+        android:hint="여기에 텍스트 입력하는 칸" />
+
+    <EditText
+        android:layout_width="533dp"
+        android:layout_height="wrap_content"
+        android:hint="여기에 연락처 입력하는 칸"
+        android:inputType="phone" />
+
+</LinearLayout>
