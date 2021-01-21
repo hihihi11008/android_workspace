@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#CDDC39">
+<!--
+FrameLayout에 올려지는 모든 뷰는 좌측상단을 기준으로 배치가 된다.
+다라서 컴포넌트간 공존이 불가, 즉 중첩이 되버림
+-->
+    <LinearLayout
+        android:layout_margin="50dp"
+        android:background="#F44336"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_margin="100dp"
+        android:background="#2196F3"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </LinearLayout>
+
+    <View
+        android:layout_margin="150dp"
+        android:background="#9C27B0"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </View>
+
+</FrameLayout>
