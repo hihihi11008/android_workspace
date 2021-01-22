@@ -1,7 +1,9 @@
-package com.study.app0121;
+package com.study.app0122;
 /*
 자바도  html문서처럼, 웹서버와 http통신이 가능하다...
 */
+import android.os.Bundle;
+import android.os.Message;
 import android.util.Log;
 
 import java.net.URL;
@@ -18,22 +20,22 @@ public class ConnectManager extends Thread{
 	URL url;
 	HttpURLConnection con; //http통신을 위한 객체(헤더+바디를 구성하여 서버와 데이터를 주고받는
 	// stateless 한 통신)
-
-
+	MainActivity mainActivity;
 	String requestUrl;
 	String data;
 
 	//이 객체를 생성하는 者는 주소와 제이슨 데이터를넘겨야 한다
-	public ConnectManager(String requestUrl, String data){
+	public ConnectManager(MainActivity mainActivity,String requestUrl, String data){
+		this.mainActivity=mainActivity;
 		this.requestUrl=requestUrl;
 		this.data=data;
 	}
 
-	public void requestByGet(){ //Get방식으로 요청을 시도하는 메서드
+	public int requestByGet(){ //Get방식으로 요청을 시도하는 메서드
 		BufferedReader buffr=null;
-
+		int code=0;
 		try{
-			url = new URL("http://192.168.219.102:8888/rest/member");//요청 주소
+			url = new URL(requestUrl);//요청 주소
 			con=(HttpURLConnection)url.openConnection();
 			con.setRequestMethod("GET");
 
@@ -47,10 +49,21 @@ public class ConnectManager extends Thread{
 				if(data==null)break; //읽어들일 데이터가 없다면 무한루프 종료
 				sb.append(data);//읽어들인 문자열을 누적시키자
 			}
-			System.out.println("서버가 보낸 응답데이터는 : "+sb.toString());
 
-			int code=con.getResponseCode(); //서버로부터 받은 응답코드 반환 ( 이 시점에 이미 서버에 요청을 완료 후 응답도 받은 상태)
-			System.out.println("서버로부터 받은 응답코드는 "+code);
+			code=con.getResponseCode(); //서버로부터 받은 응답코드 반환 ( 이 시점에 이미 서버에 요청을 완료 후 응답도 받은 상태)
+			Log.d(TAG,"서버로부터 받은 응답코드는 "+code);
+			//이 시점이 바로 통신이 완료된 시점이므로,여기서 화면갱신하자
+			Log.d(TAG,"서버가 보낸 응답데이터는 : "+sb.toString());
+			//mainActivity.printData(sb.toString()); // 사용자 정의 쓰레드는 디자인 접근 불가
+			//해결책? 디자인을 갱신해달라고, 요청하면된다 이때 요청을 받는 전달객체를 핸들러라 한다.
+			//핸들러에게 동작을 요청
+			//mainActivity.handler.sendMessage(메시지객체); //handle의 handleMessage를 호출하게 됨
+			Message message = new Message(); //empty 메시지 객체 생성
+			Bundle bundle = new Bundle();
+			bundle.putString("data",sb.toString());
+			message.setData(bundle);
+			mainActivity.handler.sendMessage(message); //handle의 handleMessage를 호출하게 됨
+
 
 		}catch(MalformedURLException e){
 			e.printStackTrace();
@@ -64,6 +77,7 @@ public class ConnectManager extends Thread{
 				}
 			}
 		}
+		return code;
 	}
 
 	//Post방식의 요청을 시도하되, JSON데이터를 전송하겠다!!!
@@ -114,7 +128,8 @@ public class ConnectManager extends Thread{
 
 	@Override
 	public void run() {
-		int code=requestByPost();
+		Log.d(TAG, "B");
+		int code=requestByGet();
 		Log.d(TAG, "서버로부터 받은 응답코드는 "+code);
 	}
 }
