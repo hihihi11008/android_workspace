@@ -3,7 +3,18 @@ package com.koreait.boardapp;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.os.Parcelable;
 import android.util.Log;
+
+import androidx.annotation.NonNull;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -12,28 +23,43 @@ import java.io.InputStreamReader;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
+import java.util.ArrayList;
+import java.util.List;
 /*
  * 안드로이드는 메인쓰레드가 루프나, 대기상태, 웹요청등을 수행하면 그 자체로
  * 에러 사항이다!! 왜 메인쓰레드는 UI, Event 등을 처리해야 하는 앱운영쓰레드 이므로...
  * 만일 위와같은 금지된 작업을 수행하면 앱은 무한 대기 상태에 빠지게 되므로..
  * */
 
-public class HttpThread extends Thread{
+public class HttpManager {
 	String TAG=this.getClass().getName();
+	MainActivity mainActivity;
 	URL url;
 	HttpURLConnection con; //http통신을 위한 객체(헤더+바디를 구성하여 서버와 데이터를 주고받는
 	// stateless 한 통신)
-
-	String requestUrl;
-	String data;
+	Handler handler; //쓰레드의 요청을 대기열(ThreadQueue)에 적재시켰다가 순서대로
 
 	//이 객체를 생성하는 者는 주소와 제이슨 데이터를넘겨야 한다
-	public HttpThread(String requestUrl, String data){
-		this.requestUrl=requestUrl;
-		this.data=data;
+	public HttpManager(MainActivity mainActivity){
+		this.mainActivity = mainActivity;
+
+		handler = new Handler(){
+			@Override
+			public void handleMessage(@NonNull Message msg) {
+				Log.d(TAG,"메인에 반영해줄까?");
+				//쓰레드대신 ListView를 제어하자
+				Bundle bundle = msg.getData();
+				List boardList = (List)bundle.getParcelableArrayList("boardList");
+				Log.d(TAG,"번들에서 끄집어낸 객체의 사이즈는"+boardList.size());
+
+				mainActivity.adapter.data=boardList; //데이터교체
+				mainActivity.adapter.notifyDataSetChanged(); //갱신
+
+			}
+		};
 	}
 
-	public void requestByGet(){ //Get방식으로 요청을 시도하는 메서드
+	public void requestByGet(String requestUrl){ //Get방식으로 요청을 시도하는 메서드
 		BufferedReader buffr=null;
 
 		try{
@@ -56,11 +82,45 @@ public class HttpThread extends Thread{
 			int code=con.getResponseCode(); //서버로부터 받은 응답코드 반환 ( 이 시점에 이미 서버에 요청을 완료 후 응답도 받은 상태)
 			Log.d(TAG,"서버로부터 받은 응답 코드는 "+code);
 
+			//만일 메인스레드가 담당하느 디자인 제어기능을 ,개발자가 정의한 쓰레드가 동시에  같이 만진다고 상상해보자
+			//그래픽처리의 안전한 동기화를 위해 금기사항임
+			//데이터를 교환하기 위해서 json을 사용한 것이기 때문에, 안드로이드나 스프링에서는 다시 POJO로
+			//변환하여 사용하면 유지보수가 쉽다 (코드의 중립성 유지)
+			ArrayList<Board> boardList = new ArrayList<Board>();
+			//문자열을 JSON 객체화
+			try {
+				JSONArray jsonArray = new JSONArray(sb.toString());
+				for (int i=0; i<jsonArray.length(); i++){
+					JSONObject jsonObject =(JSONObject)jsonArray.get(i);
+					Board board = new Board();
+					board.setBaord_id(jsonObject.getInt("board_id"));
+					board.setTitle(jsonObject.getString("title"));
+					board.setWriter(jsonObject.getString("writer"));
+					board.setRegdate(jsonObject.getString("regdate"));
+					board.setHit(jsonObject.getInt("hit"));
+					boardList.add(board);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+			//핸들러에게 전달할 데이터 구성하기
+			Message message = new Message();
+			Bundle bundle = new Bundle();
+
+			/*Board board = new Board();
+			board.setTitle("직렬화 텍스트");*/
+
+			//주의 : List안에 들어가는 vo가 반드시 Parcelable화 되어 있어야 함
+			bundle.putParcelableArrayList("boardList", boardList);
+
+			message.setData(bundle);// 메시지 객체에 번들 탑재
+			handler.sendMessage(message);//핸들러 호출 및 데이터전달
+
 		}catch(MalformedURLException e){
 			e.printStackTrace();
 		}catch(IOException e){
 			e.printStackTrace();
-		}finally{
+		}  finally{
 			if(buffr!=null){
 				try{
 					buffr.close();
@@ -71,7 +131,7 @@ public class HttpThread extends Thread{
 	}
 
 	//Post방식의 요청을 시도하되, JSON데이터를 전송하겠다!!!
-	public int requestByPost(){
+	public int requestByPost(String requestUrl, String data){
 		BufferedWriter buffw=null; //버퍼처리된 문자기반 스트림
 		int code=0; //서버의 응답 코드
 
@@ -114,11 +174,5 @@ public class HttpThread extends Thread{
 			}
 		}
 		return code; //응답코드 반환
-	}
-
-	@Override
-	public void run() {
-		int code=requestByPost();
-		Log.d(TAG, "서버로부터 받은 응답코드는 "+code);
 	}
 }

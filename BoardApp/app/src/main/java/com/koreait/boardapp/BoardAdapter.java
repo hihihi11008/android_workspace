@@ -20,20 +20,11 @@ public class BoardAdapter extends BaseAdapter {
 	String TAG = this.getClass().getName();
 	MainActivity mainActivity;
 	LayoutInflater layoutInflater; //XML을 자바 객체화 시켜주는 객체
-	List<String> data = new ArrayList<String>();
+	List<Board> data = new ArrayList<Board>();
 
 	public BoardAdapter(MainActivity mainActivity) {
 		this.mainActivity = mainActivity;
 		layoutInflater = mainActivity.getLayoutInflater();
-
-		data.add("사과");
-		data.add("딸기");
-		data.add("복숭아");
-		data.add("망고");
-		data.add("파인애플");
-		data.add("망고스틴");
-		data.add("드래곤프룻");
-		data.add("메론");
 	}
 
 	@Override
@@ -69,12 +60,12 @@ public class BoardAdapter extends BaseAdapter {
 			//false라고 옵션을 줘야 , parent인 ListView가 아닌, 인플레이션 대상 xml의 최상위 뷰그룹이 반환된다. 즉 아이템의 최상위
 			View parentView = layoutInflater.inflate(R.layout.board_item, parent, false);
 			Log.d(TAG, "parentView is "+parentView);
-
+			view=parentView;
 		}else {
 			view = convertView;
 		}
 		Log.d(TAG, data.get(position)+"의 뷰는 "+ view+ ", parent는 "+parent);
-		Log.d(TAG, data.get(position)+"의 convertView 는 "+ convertView);
+		//Log.d(TAG, data.get(position)+"의 convertView 는 "+ convertView);
 		return view;
 	}
 
