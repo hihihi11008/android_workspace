@@ -10,7 +10,7 @@ import com.koreait.actionbarapp.gallery.GalleryFragment;
 import com.koreait.actionbarapp.mp3.MusicFragment;
 
 public class MyViewPagerAdapter extends FragmentStatePagerAdapter {
-	Fragment[] fragments=new Fragment[2];
+	Fragment[] fragments=new Fragment[3];
 
 	public MyViewPagerAdapter(@NonNull FragmentManager fm, int behavior) {
 		super(fm, behavior);

@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
 		myViewPagerAdapter = new MyViewPagerAdapter(this.getSupportFragmentManager(),0);
 		viewPager.setAdapter(myViewPagerAdapter);//뷰페이지와 어댑텨 연걸
 
+
 	}
 
 	//현재 액티비티에 메뉴를 추가하려면 즉 액션바를 추가하려면 인플레이션 시키는 메서드 재정의
