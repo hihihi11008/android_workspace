@@ -11,4 +11,5 @@ public class BoardUpdateException extends RuntimeException{
 	public BoardUpdateException(Throwable e){
 		super(e);
 	}
+
 }
